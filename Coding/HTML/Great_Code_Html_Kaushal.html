@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+</head>
+<body>
+    <h1>Welcome To My Website</h1>
+    <hr>
+    <h2>Press this button and see what happens</h2>
+    <button id="myButton" onclick="Click()">Click Me!</button>
+    <style>
+        #myButton { 
+            padding: 10px 10px;
+            background: red;
+            color: white;
+            border-color: white;
+            border-radius: 5px;
+            box-shadow: 5px 5px 15px grey;
+            font-size: 20px;
+            margin: 5px;
+
+        }
+        #myButton:hover {
+            transition: 2s ease-in-out;
+            transform: scale(1.1);
+            cursor: pointer;
+            box-shadow: 10px 10px 20px red;
+
+            background: linear-gradient(63deg,
+                red, orange, yellow, green, cyan, blue, violet, red
+            );
+            background-size: 400%;
+            animation:
+                rainbow 15s linear infinite
+        }
+        #myButton:active {
+            transition: 2s ease-in-out;
+            transform: scale(0.9);
+            box-shadow: 4px 4px 15px;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0%; }
+            100% { background-position: 400%; }
+        }
+        .body {
+            font-family: 'Times New Roman', Times, serif;
+        }
+    </style>
+    <script>
+        function Click() {
+            if (document.getElementById("myButton")) {
+                ask = confirm("Do you want to enter \"beginner_showoff.html\"?")
+                if (ask == true) {
+                    open("beginner_showoff.html").value
+                }
+                else {
+                    
+                }
+
+            }
+        }
+    </script>
+</body>
+</html>
