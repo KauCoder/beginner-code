@@ -5,7 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from pynput import keyboard
 
-SPEED = 0.005 
+SPEED = 0.005
 
 print("Launching Chrome Browser...")
 chrome_options = webdriver.ChromeOptions()

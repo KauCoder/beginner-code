@@ -7,7 +7,7 @@ def main():
             print("Name is required.")
             name = input("What is your name? ")
         age = int(input(f"Hello, {name}, how old are you? "))
-        while age == "":
+        while str(age) == "":
             print("Age is required.")
             age = int(input(f"How old are you, {name}? "))
         if age >= 18:
@@ -15,7 +15,7 @@ def main():
             country = input("What country are you from? ")
             if country.lower() == "canada":
                 print("Great! You are eligible to vote! Have a nice day!")
-            elif country.lower() == "united states of america" or "usa" or "united states" or "america":
+            elif country.lower() == "united states of america" or country.lower() == "usa" or country.lower() == "united states" or country.lower() == "america":
                 print("GET OUT YOU STUPID AMERICAN! YOU DO NOT BELONG IN THIS COUNTRY!!!")
                 print("You are not thanked for coming to VoteCheck.")
                 exit()
