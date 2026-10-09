@@ -45,7 +45,11 @@ WORDS = [
     "encephalocraniocutaneouslipomatosis",
     "subcompartmentalization",
     "bromochlorodifluoromethane",
-
+    "hexanitrohexaazatricyclododecanedione",
+    "subacutesclerosingpanencephalitis",
+    "congenitalnasameningoencephalocele",
+    "reninangiotensinaldosterone",
+    "sulfoquinovosyldiacylglycerol"
 ]
 
 
