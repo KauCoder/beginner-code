@@ -26,7 +26,7 @@ GRAY = (40, 40, 40)
 GRID_COLOR = (30, 30, 30)
 
 # Player setup
-player = pygame.Rect(0, 0, 30, 30) # Size remains the same
+player = pygame.Rect(0, 0, 30, 30)
 player_vel_y = 0
 gravity = 0.7
 jump_power = -10
@@ -43,9 +43,7 @@ game_won = False
 def make_rect(coords, width_tiles=1, height_tiles=1):
     return pygame.Rect(coords[0] * TILE_W, coords[1] * TILE_H, TILE_W * width_tiles, TILE_H * height_tiles)
 
-# Helper specifically for spikes to match your original smaller dimensions
 def make_spike_rect(coords):
-    # Centers a 40x20 spike at the bottom of the targeted grid tile
     pixel_x = coords[0] * TILE_W + (TILE_W - 40) // 2
     pixel_y = coords[1] * TILE_H + (TILE_H - 20)
     return pygame.Rect(pixel_x, pixel_y, 40, 20)
@@ -56,13 +54,11 @@ def make_coin_rect(coords):
     pixel_y = coords[1] * TILE_H + (TILE_H - 20) // 2
     return pygame.Rect(pixel_x, pixel_y, 20, 20)
 
-# --- EASY GRID-BASED LEVEL DESIGN ---
-# Grid handles coordinates from 0 to 9. Row 9 is the floor.
 grid_levels = {
     0: {
         "start": [1, 8],
         "platforms": [[i, 9] for i in range(10)], # Entire bottom row
-        "spikes": [[3, 8], [4, 8], [5, 8]],       # Easily move spikes by changing these pairs!
+        "spikes": [[3, 8], [4, 8], [5, 8]],
         "coins": [[8, 8]]
     },
     1: {
@@ -151,10 +147,13 @@ while running:
         
     # Collision check for platforms
     for p in current_platforms:
-        if player.colliderect(p) and player_vel_y >= 0:
+        if player.colliderect(p) and player_vel_y >= 0 and player.right > p.left and player.left < p.right:
             player.bottom = p.top
             player_vel_y = 0
             on_ground = True
+        if player.colliderect(p) and player_vel_y >= 0 and player.top < p.bottom:
+                        player.top = p.bottom
+                        player_vel_y = -0.1
             
     # Jump
     if keys[pygame.K_SPACE] and on_ground:
