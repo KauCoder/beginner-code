@@ -20,7 +20,7 @@ def say_ext(txt):
     extension_os_say.say(txt)
 def openApp(App, /):
     """Opens any Macbook desktop application. Only works on Mac."""
-    App_Opener(App)
+    App_Opener.open_app(App)
 def script_type(msg, /, *, delay=0.5, speed=0.1):
     """
     Outputs a message to a console one character at a time, thus giving the text a 'typing' feel. flush, sep, and end are not supported.
@@ -65,8 +65,6 @@ def script_type_real(test, speed=0.1, delay=0.5):
     return typed_text
 
 def script_type_virtual(text, speed=0):
-    # ⏱️ CHANGE THIS SINGULAR VARIABLE ONLY (In seconds per letter)
-    # 0.005 = Blazing Fast | 0.02 = Snappy Machine | 0.05 = Relaxed Robot
     SECONDS_PER_LETTER = 0.02
     
     # Escape any tricky characters for AppleScript syntax safety

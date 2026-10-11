@@ -1,7 +1,15 @@
 import cv2  # Video Processing and camera control
 import numpy as np  # Pixel Data and Colour Arrays
+import mediapipe as mp # Hand Tracking and Gesture Recognition
 import time  # Speech/typing cooldown buffers
 import os # To say outloud the word "hungry" using os.say()
+import math  # For calculating distances between hand landmarks
+
+# Initialize MediaPipe Hands
+mp_hands = mp.solutions.hands
+mp_drawing = mp.solutions.drawing_utils
+hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5)
+
 
 # Open a connection to the Mac's built-in FaceTime HD camera (0 means primary camera)
 cap = cv2.VideoCapture(0)
@@ -20,11 +28,14 @@ print("Sign Language Gesture Detector ON")
 print("Make a 'C' / Cup shape with your hand and swipe DOWNWARD.")
 print("Press 'q' inside the video box to quit.")
 
+def get_distance(p1, p2):
+    return math.hypot(p1.x - p2.x, p1.y - p2.y)
+
 # Start a continuous loop that runs as long as the webcam connection stays open
 while cap.isOpened():
     # Read the latest image snapshot from the webcam array
     success, frame = cap.read()
-    
+
     # If the camera fails to grab a frame, skip this loop iteration and try again
     if not success:
         break
@@ -32,77 +43,66 @@ while cap.isOpened():
     # Flip the image horizontally so it acts like a mirror when you look at it
     frame = cv2.flip(frame, 1)
     
-    # Extract the total height (h) and width (w) in pixels from the current video frame
-    h, w, _ = frame.shape
+    # Extract the total height and width in pixels from the current video frame
+    height, width, _ = frame.shape
 
-    # Pass the image to the background model to turn still objects black and moving objects white
-    fgmask = fgbg.apply(frame)
-    
-    # Define a solid 5x5 pixel block matrix used as a digital cleaning brush template
-    kernel = np.ones((5, 5), np.uint8)
-    
-    # Erase tiny, pixelated camera sensor grain noise using the 5x5 brush matrix template
-    fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
+    # MediaPipe requires RGB images
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    results = hands.process(rgb_frame)
 
-    # Scan the black-and-white mask and trace a vector perimeter path around any white shapes found
-    contours, _ = cv2.findContours(fgmask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    is_cup_shape = False
+    current_y = None
 
-    # If the vector engine detects at least one moving silhouette shape on screen
-    if len(contours) > 0:
-        # Loop through all traced motion paths and target the single path with the largest pixel area
-        largest_motion = max(contours, key=cv2.contourArea)
-        
-        # Only proceed if the moving object takes up a substantial block of the frame (filters out tiny blinks)
-        if cv2.contourArea(largest_motion) > 3000:
-            # Generate four clean box dimensions wrapping tightly around the moving object path
-            x, y, box_w, box_h = cv2.boundingRect(largest_motion)
-            
-            # Divide the box width by its height to extract a precise decimal shape ratio
-            aspect_ratio = float(box_w) / box_h
-            
-            # If the box is noticeably narrow and tall (indicating fingers curled like a cup)
-            if aspect_ratio < 0.85:
-                # Draw a blue tracking box over the moving area to confirm it matches the cup shape profile
-                cv2.rectangle(frame, (x, y), (x + box_w, y + box_h), (255, 0, 0), 2)
-                # Flip our validation switch to confirm the hand currently looks like a cup
+    if results.multi_hand_landmarks:
+        for hand_landmarks in results.multi_hand_landmarks:
+            # Draw the hand skeleton on the video frame to visualize the landmarks on the hand.
+            mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+
+            # Get hand landmarks
+            lndmrk = hand_landmarks.landmark
+
+            # Get the y coordinate of the palm center (which is landmark 9, or the metacarpophalangeal joint of the middle finger)
+            current_y = int(lndmrk[9].y * height)
+
+            # Cup Shape Logic
+            hand_scale = get_distance(lndmrk[0], lndmrk[9]) # Distance from wrist to middle finger metacarpophalangeal joint.
+
+            # Check if fingers are slightly curled (distance from tip to palm is shorter)
+            index_curled = get_distance(lndmrk[8], lndmrk[0]) < hand_scale * 1.3
+            middle_curled = get_distance(lndmrk[12], lndmrk[0]) < hand_scale * 1.3
+            ring_curled = get_distance(lndmrk[16], lndmrk[0]) < hand_scale * 1.3
+            pinky_curled = get_distance(lndmrk[20], lndmrk[0]) < hand_scale * 1.3
+
+            # Check if the thumb is extended (distance from tip to index finger metacarpophalangeal joint is longer)
+            thumb_extended = get_distance(lndmrk[4], lndmrk[5]) > hand_scale * 0.5
+
+            if index_curled and middle_curled and ring_curled and pinky_curled and thumb_extended:
                 is_cup_shape = True
+                print("Hand is in a cup shape.")
             else:
-                # Draw a standard green tracking box because the moving area looks flat, wide, or non-cupped
-                cv2.rectangle(frame, (x, y), (x + box_w, y + box_h), (0, 255, 0), 2)
-                # Flip our validation switch to indicate this shape profile is not a cup
-                is_cup_shape = False
-            
-            # Find the exact vertical midpoint pixel coordinate of our tracking box
-            center_y = y + (box_h // 2)
+                print("Tracking hand...")
 
-            # Check if we have coordinate data from a previous frame to compare it to
-            if prev_y is not None:
-                # Check if the vertical midpoint dropped down by more than 35 pixels AND it is a cup shape
-                if (center_y - prev_y > 35) and is_cup_shape:
-                    # Fetch the current system time clock value in seconds
+            if prev_y is not None and is_cup_shape:
+                # Check if palm moved down by at least 35 pixels
+                if (current_y - prev_y) >= 35:
                     current_time = time.time()
-                    # Check if at least 2 full seconds have passed since the word last printed
                     if current_time - last_trigger > 2.0:
-                        # Output the gesture text confirmation cleanly into your terminal window logs
-                        print("hungry")
-                        # Say the word "hungry" out loud
-                        os.system("say 'hungry'")
-                        # Update the trigger clock anchor point to log this current event time
+                        print("Hungry")
+                        os.system("say 'hungry!'")
                         last_trigger = current_time
 
-            # Update our vertical memory position so the next loop frame can track displacement
-            prev_y = center_y
+            # Keep updating our Y memory as long as a hand is on screen
+            prev_y = current_y
+
     else:
-        # Clear out our location memory if your hand completely exits the video frame layout entirely
+        # Reset tracking if hand leaves the frame completely
         prev_y = None
 
-    # Render our live visual mirror display window with the bounding boxes applied over it
-    cv2.imshow("Webcam Motion Tracker", frame)
+    cv2.imshow("Sign Language Gesture Detector", frame)
 
-    # Pause execution for 1ms to check if you hit the lowercase 'q' key inside the video display frame
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        # Break the main loop cycle to initiate a clean application exit shutdown sequence
+    if cv2.waitKey(1) & 0xFF == ord('q'): # If the key 'q' is detected, quit the program and close the webcam connection
         break
+            
 
 # Release control of your Mac's camera array hardware so other apps can use it again
 cap.release()

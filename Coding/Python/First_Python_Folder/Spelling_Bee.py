@@ -2,7 +2,7 @@ import WPM_Test
 
 # Override settings inside the main module
 WPM_Test.MODE = "Hard"
-WPM_Test.SCRIPTS = True
+WPM_Test.SCRIPTS = False
 WPM_Test.SPEED = 0.01
 WPM_Test.DELAY = 0
 
