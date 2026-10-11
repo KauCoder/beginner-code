@@ -21,9 +21,8 @@ def on_press(key):
         return False
 
 print("==================================================")
-print("► AppleScript Global Macro Active.")
-print("► 1. Click completely inside your game chat, Discord, or TextEdit.")
-print("► Press 'ESC' inside your Terminal to turn it off.")
+print("> AppleScript Global Macro Active.")
+print("> Press 'ESC' inside your Terminal to turn it off.")
 print("==================================================")
 
 with keyboard.Listener(on_press=on_press) as listener:
