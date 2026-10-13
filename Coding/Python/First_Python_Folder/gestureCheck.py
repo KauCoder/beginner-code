@@ -4,6 +4,9 @@ import time  # Speech/typing cooldown buffers
 import subprocess # To say outloud the word "hungry" using subprocess.run([])
 import math  # For calculating distances between hand landmarks
 
+# Variable for drawing hand skeleton and landmarks
+SKELETON = True
+
 # Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -54,7 +57,8 @@ while cap.isOpened():
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             # Draw the hand skeleton on the video frame to visualize the landmarks on the hand.
-            mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            if SKELETON: # Only draw the skeleton if the SKELETON variable is set to True
+                mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
             # Get hand landmarks
             lndmrk = hand_landmarks.landmark
