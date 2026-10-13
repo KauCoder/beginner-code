@@ -1,8 +1,7 @@
 import cv2  # Video Processing and camera control
-import numpy as np  # Pixel Data and Colour Arrays
 import mediapipe as mp # Hand Tracking and Gesture Recognition
 import time  # Speech/typing cooldown buffers
-import os # To say outloud the word "hungry" using os.say()
+import subprocess # To say outloud the word "hungry" using subprocess.run([])
 import math  # For calculating distances between hand landmarks
 
 # Initialize MediaPipe Hands
@@ -16,7 +15,6 @@ cap = cv2.VideoCapture(0)
 
 # Create a motion isolation model that remembers the last 20 frames to filter out the static background
 fgbg = cv2.createBackgroundSubtractorMOG2(history=20, varThreshold=50, detectShadows=False)
-
 # Track the time when the word was last triggered so it doesn't print endlessly
 last_trigger = 0
 
@@ -88,7 +86,7 @@ while cap.isOpened():
                     current_time = time.time()
                     if current_time - last_trigger > 2.0:
                         print("Hungry")
-                        os.system("say 'hungry!'")
+                        subprocess.run(["say", "hungry!"])
                         last_trigger = current_time
 
             # Keep updating our Y memory as long as a hand is on screen
