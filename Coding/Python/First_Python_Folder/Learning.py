@@ -1,11 +1,7 @@
-import turtle
+for i in range(4, 21):
+    candies = 90 / i
 
-pen = turtle.Turtle()
-pen.speed(5)
-pen.shape("turtle")
-pen.color("green")
-
-pen.circle(100, 360, 100)
-
-turtle.mainloop()
-turtle.done()
+    if candies.is_integer():
+        print(f"{candies}, valid")
+    else:
+        print(f"{candies}, invalid")
